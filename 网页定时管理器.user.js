@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         网页定时管理器
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  网页定时关闭和定时跳转
 // @author       huihuia24
 // @homepage     https://github.com/huihuia24
@@ -14,10 +14,10 @@
 // @grant        GM_registerMenuCommand
 // @run-at       document-idle
 // @icon         https://github.com/huihuia24/Web-Timer-Manager/blob/28a6ac6404aa154168b731a7d632b306febdc7d2/%E7%BD%91%E9%A1%B5%E5%AE%9A%E6%97%B6%E7%AE%A1%E7%90%86%E5%99%A8.png?raw=true
-// @downloadURL https://update.greasyfork.org/scripts/555269/%E7%BD%91%E9%A1%B5%E5%AE%9A%E6%97%B6%E7%AE%A1%E7%90%86%E5%99%A8.user.js
-// @updateURL https://update.greasyfork.org/scripts/555269/%E7%BD%91%E9%A1%B5%E5%AE%9A%E6%97%B6%E7%AE%A1%E7%90%86%E5%99%A8.meta.js
+// @downloadURL  https://update.greasyfork.org/scripts/555269/%E7%BD%91%E9%A1%B5%E5%AE%9A%E6%97%B6%E7%AE%A1%E7%90%86%E5%99%A8.user.js
+// @updateURL    https://update.greasyfork.org/scripts/555269/%E7%BD%91%E9%A1%B5%E5%AE%9A%E6%97%B6%E7%AE%A1%E7%90%86%E5%99%A8.meta.js
+// @noframes     // 禁止在iframe中执行
 // ==/UserScript==
-
 (function() {
     'use strict';
     
@@ -99,7 +99,7 @@
         }
     };
     
-    // 基础样式定义
+    // 基础样式定义（核心修改：提升层级并隔离层叠上下文）
     GM_addStyle(`
         #timer-manager {
             position: fixed;
@@ -107,11 +107,13 @@
             max-width: calc(100% - 40px);
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            z-index: 999999;
+            z-index: 9999999; /* 超高层级确保置顶 */
             padding: 15px;
             display: none;
             transition: all 0.3s ease;
             box-sizing: border-box;
+            will-change: transform, z-index; /* 强制创建独立层叠上下文 */
+            transform: translateZ(0); /* 硬件加速渲染，避免被网页遮挡 */
         }
         
         #timer-mini {
@@ -121,7 +123,7 @@
             font-size: 20px;
             font-weight: bold;
             box-shadow: 0 3px 12px rgba(0,0,0,0.2);
-            z-index: 999999;
+            z-index: 9999999; /* 超高层级确保置顶 */
             cursor: pointer;
             user-select: none;
             transition: all 0.2s ease;
@@ -129,10 +131,8 @@
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-        
-        #timer-mini:hover {
-            transform: translateY(-2px);
+            will-change: transform, z-index; /* 强制创建独立层叠上下文 */
+            transform: translateZ(0); /* 硬件加速渲染 */
         }
         
         .timer-header {
@@ -718,7 +718,7 @@
         document.body.appendChild(mainUI);
         document.body.appendChild(miniUI);
         
-        // 定位UI
+        // 定位UI（基于浏览器视口，不受网页布局影响）
         const mainPos = Storage.getPos('timer_manager', window.innerWidth - 410, 20);
         mainUI.style.left = `${mainPos.x}px`;
         mainUI.style.top = `${mainPos.y}px`;
@@ -898,7 +898,7 @@
                 dragStartX = e.clientX;
                 dragStartY = e.clientY;
                 isDragging = true;
-                element.style.zIndex = '9999999';
+                element.style.zIndex = '9999999'; // 拖动时临时提升层级
                 element.style.transition = 'none';
                 lastDragTime = Date.now();
             }
