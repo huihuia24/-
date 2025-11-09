@@ -20,7 +20,27 @@
 
 (function() {
     'use strict';
-
+    
+    // 全局单例检测：若已有实例则直接退出
+    if (window.timerManagerInstance) {
+        return;
+    }
+    window.timerManagerInstance = true;
+    
+    // 修复 UI 重复问题：初始化前移除已存在的管理器元素
+    function cleanDuplicateUI() {
+        const existingMain = document.getElementById('timer-manager');
+        const existingMini = document.getElementById('timer-mini');
+        const existingThemeStyle = document.getElementById('timer-theme-styles');
+        
+        // 移除重复的主界面、最小化界面和主题样式
+        if (existingMain) existingMain.remove();
+        if (existingMini) existingMini.remove();
+        if (existingThemeStyle) existingThemeStyle.remove();
+    }
+    // 执行清理
+    cleanDuplicateUI();
+    
     // 加载Font Awesome
     function loadFontAwesome() {
         if (document.querySelector('link[href*="font-awesome"]')) return;
@@ -31,7 +51,7 @@
         document.head.appendChild(link);
     }
     loadFontAwesome();
-
+    
     // 存储管理模块
     const Storage = {
         get(key, defaultValue) {
@@ -78,7 +98,7 @@
             this.set('timer_theme', theme);
         }
     };
-
+    
     // 基础样式定义
     GM_addStyle(`
         #timer-manager {
@@ -395,14 +415,13 @@
             margin-top: 10px;
             display: none;
         }
-
         .overflow-ellipsis {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
     `);
-
+    
     // 创建主题样式
     function createThemeStyles() {
         const style = document.createElement('style');
@@ -424,7 +443,6 @@
                 --danger-light: rgba(231, 76, 60, 0.1);
                 --shadow: 0 4px 20px rgba(0,0,0,0.15);
             }
-
             /* 深色主题 */
             .timer-dark {
                 --bg-primary: #1e1e1e;
@@ -441,7 +459,6 @@
                 --danger-light: rgba(231, 76, 60, 0.2);
                 --shadow: 0 4px 20px rgba(0,0,0,0.5);
             }
-
             /* 主题应用 */
             .timer-theme {
                 background: var(--bg-primary);
@@ -449,127 +466,100 @@
                 border-color: var(--border-color);
                 box-shadow: var(--shadow);
             }
-
             #timer-manager.timer-theme {
                 border: 1px solid var(--border-color);
             }
-
             #timer-mini.timer-theme {
                 background: var(--bg-secondary);
                 color: var(--text-primary);
             }
-
             .timer-header.timer-theme {
                 border-bottom-color: var(--border-color);
             }
-
             .timer-btn.timer-theme {
                 background: var(--bg-secondary);
                 color: var(--text-secondary);
             }
-
             .timer-btn.timer-theme:hover {
                 background: var(--bg-tertiary);
                 color: var(--text-primary);
             }
-
             .timer-tabs.timer-theme {
                 background: var(--bg-secondary);
             }
-
             .timer-tab.timer-theme {
                 color: var(--text-secondary);
             }
-
             .timer-tab.timer-theme.active {
                 background: var(--accent-color);
                 color: white;
             }
-
             .form-label.timer-theme {
                 color: var(--text-primary);
             }
-
             .form-control.timer-theme {
                 background: var(--bg-secondary);
                 color: var(--text-primary);
                 border-color: var(--border-color);
             }
-
             .form-control.timer-theme:focus {
                 border-color: var(--accent-color);
                 box-shadow: 0 0 0 3px var(--accent-light);
             }
-
             .time-label.timer-theme {
                 color: var(--text-secondary);
             }
-
             .time-input.timer-theme {
                 background: var(--bg-secondary);
                 color: var(--text-primary);
                 border-color: var(--border-color);
             }
-
             .time-input.timer-theme:focus {
                 border-color: var(--accent-color);
             }
-
             .btn-primary.timer-theme {
                 background: var(--accent-color);
                 color: white;
             }
-
             .btn-primary.timer-theme:hover {
                 background: var(--accent-hover);
             }
-
             .btn-secondary.timer-theme {
                 background: var(--bg-secondary);
                 color: var(--text-primary);
                 border: 1px solid var(--border-color);
             }
-
             .btn-secondary.timer-theme:hover {
                 background: var(--bg-tertiary);
             }
-
             .task-list.timer-theme {
                 background: var(--bg-secondary);
                 border-color: var(--border-color);
             }
-
             .task-item.timer-theme {
                 border-bottom-color: var(--border-color);
             }
-
             .task-item.timer-theme:hover {
                 background: var(--bg-tertiary);
             }
-
             .task-url.timer-theme {
                 color: var(--text-primary);
             }
-
             .task-time.timer-theme {
                 color: var(--text-secondary);
             }
-
             .task-remove.timer-theme {
                 color: var(--danger-color);
                 background: var(--bg-secondary);
             }
-
             .task-remove.timer-theme:hover {
                 background: var(--danger-light);
             }
-
             .status.timer-theme {
                 background: var(--bg-secondary);
                 color: var(--text-secondary);
                 border-color: var(--border-color);
             }
-
             .radio-item.timer-theme input,
             .checkbox-item.timer-theme input {
                 accent-color: var(--accent-color);
@@ -578,7 +568,7 @@
         document.head.appendChild(style);
     }
     createThemeStyles();
-
+    
     // 创建UI元素
     function createUI(theme) {
         // 主界面
@@ -718,28 +708,28 @@
                 </div>
             </div>
         `;
-
+        
         // 最小化界面
         const miniUI = document.createElement('div');
         miniUI.id = 'timer-mini';
         miniUI.className = `timer-theme timer-${theme}`;
         miniUI.innerHTML = '<i class="fas fa-hourglass"></i> <span id="mini-time">00:00:00</span>';
-
+        
         document.body.appendChild(mainUI);
         document.body.appendChild(miniUI);
-
+        
         // 定位UI
         const mainPos = Storage.getPos('timer_manager', window.innerWidth - 410, 20);
         mainUI.style.left = `${mainPos.x}px`;
         mainUI.style.top = `${mainPos.y}px`;
-
+        
         const miniPos = Storage.getPos('timer_mini', window.innerWidth - 180, 20);
         miniUI.style.left = `${miniPos.x}px`;
         miniUI.style.top = `${miniPos.y}px`;
-
+        
         return { mainUI, miniUI };
     }
-
+    
     // 定时器控制器
     class TimerController {
         constructor(ui) {
@@ -757,7 +747,7 @@
             this.currentTheme = Storage.getTheme();
             this.doubleClickDelay = 300; // 双击检测延迟
             this.lastClickTime = 0;
-
+            
             // 恢复多任务状态
             const savedState = Storage.getMultiState();
             if (savedState.running && savedState.index >= 0 && this.tasks.length > savedState.index) {
@@ -766,12 +756,12 @@
                 this.remainingTime = savedState.remaining;
                 this.startTaskTimer();
             }
-
+            
             this.initEvents();
             this.renderTasks();
             this.fixInputFields();
         }
-
+        
         // 切换主题
         toggleTheme() {
             const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
@@ -790,7 +780,7 @@
             const themeIcon = document.querySelector('#theme-toggle i');
             themeIcon.className = `fas ${newTheme === 'light' ? 'fa-moon' : 'fa-sun'}`;
         }
-
+        
         // 修复输入框交互
         fixInputFields() {
             const inputs = document.querySelectorAll('.time-input, .form-control');
@@ -813,14 +803,14 @@
                 }
             });
         }
-
+        
         initEvents() {
             // 主题切换
             document.getElementById('theme-toggle').addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleTheme();
             });
-
+            
             // 标签页切换
             document.querySelectorAll('.timer-tab').forEach(tab => {
                 tab.addEventListener('click', (e) => {
@@ -834,7 +824,7 @@
                     document.getElementById(`${tabId}-tab`).classList.add('active');
                 });
             });
-
+            
             // 结束操作选择
             const actionUrl = document.getElementById('action-url');
             const targetUrl = document.getElementById('target-url');
@@ -846,17 +836,17 @@
             actionUrl.addEventListener('change', () => {
                 targetUrl.style.display = 'block';
             });
-
+            
             // 当前网页定时控制
             document.getElementById('start-current').addEventListener('click', () => this.startCurrentTimer());
             document.getElementById('stop-current').addEventListener('click', () => this.stopCurrentTimer());
-
+            
             // 多网址任务控制
             document.getElementById('add-task').addEventListener('click', () => this.addTask());
             document.getElementById('clear-tasks').addEventListener('click', () => this.clearTasks());
             document.getElementById('start-multi').addEventListener('click', () => this.startMultiTimer());
             document.getElementById('stop-multi').addEventListener('click', () => this.stopMultiTimer());
-
+            
             // 最小化/恢复 - 单击最小化，双击恢复
             document.getElementById('minimize-btn').addEventListener('click', () => this.minimize());
             
@@ -871,11 +861,11 @@
                     this.lastClickTime = now;
                 }
             });
-
+            
             // 使UI可拖动
             this.makeDraggable(this.ui.mainUI, 'timer_manager');
             this.makeDraggable(this.ui.miniUI, 'timer_mini');
-
+            
             // 防止拖动事件影响输入框
             const inputs = document.querySelectorAll('input, button, .timer-btn');
             inputs.forEach(input => {
@@ -883,7 +873,7 @@
                 input.addEventListener('touchstart', (e) => e.stopPropagation());
             });
         }
-
+        
         // 优化拖动性能
         makeDraggable(element, storageKey) {
             let isDragging = false;
@@ -891,12 +881,12 @@
             const originalZIndex = element.style.zIndex;
             let dragStartX, dragStartY;
             let lastDragTime = 0;
-
+            
             element.addEventListener('pointerdown', startDrag);
             document.addEventListener('pointermove', drag);
             document.addEventListener('pointerup', endDrag);
             document.addEventListener('pointercancel', endDrag);
-
+            
             function startDrag(e) {
                 // 忽略按钮元素的拖动
                 if (e.target.closest('.timer-btn, button, input')) return;
@@ -912,7 +902,7 @@
                 element.style.transition = 'none';
                 lastDragTime = Date.now();
             }
-
+            
             function drag(e) {
                 if (!isDragging) return;
                 
@@ -934,7 +924,7 @@
                     element.style.top = `${constrainedY}px`;
                 });
             }
-
+            
             function endDrag() {
                 if (!isDragging) return;
                 
@@ -950,7 +940,7 @@
                 );
             }
         }
-
+        
         // 格式化时间
         formatTime(seconds) {
             const h = Math.floor(seconds / 3600);
@@ -962,7 +952,7 @@
                 s.toString().padStart(2, '0')
             ].join(':');
         }
-
+        
         // 开始当前网页定时
         startCurrentTimer() {
             this.stopCurrentTimer();
@@ -987,7 +977,7 @@
             this.lastUpdateTime = Date.now();
             this.currentTimer = requestAnimationFrame(this.updateCurrentTimer.bind(this));
         }
-
+        
         // 更新当前定时器
         updateCurrentTimer() {
             if (!this.currentTimer || !this.isCurrentTimerRunning) return;
@@ -1014,7 +1004,7 @@
             
             this.currentTimer = requestAnimationFrame(this.updateCurrentTimer.bind(this));
         }
-
+        
         // 停止当前定时器
         stopCurrentTimer() {
             if (this.currentTimer) {
@@ -1024,7 +1014,7 @@
             this.isCurrentTimerRunning = false;
             document.getElementById('current-status').innerHTML = '<i class="fas fa-stop-circle"></i> 已停止';
         }
-
+        
         // 执行当前定时结束操作
         executeCurrentAction() {
             const action = document.querySelector('input[name="end-action"]:checked').value;
@@ -1038,7 +1028,7 @@
                 }
             }
         }
-
+        
         // 添加多网址任务
         addTask() {
             const url = document.getElementById('multi-url').value.trim();
@@ -1075,7 +1065,7 @@
             
             document.getElementById('multi-status').innerHTML = '<i class="fas fa-check-circle"></i> 任务已添加';
         }
-
+        
         // 渲染任务列表
         renderTasks() {
             const taskList = document.getElementById('task-list');
@@ -1113,7 +1103,7 @@
                 });
             });
         }
-
+        
         // 清空任务列表
         clearTasks() {
             this.tasks = [];
@@ -1121,7 +1111,7 @@
             this.renderTasks();
             document.getElementById('multi-status').innerHTML = '<i class="fas fa-trash"></i> 任务列表已清空';
         }
-
+        
         // 开始多网址定时跳转
         startMultiTimer() {
             this.stopCurrentTimer();
@@ -1136,7 +1126,7 @@
             this.currentTaskIndex = 0;
             this.navigateToCurrentTaskUrl();
         }
-
+        
         // 跳转到当前任务的URL
         navigateToCurrentTaskUrl() {
             if (this.currentTaskIndex >= this.tasks.length || !this.isMultiRunning) {
@@ -1162,7 +1152,7 @@
                 }
             });
         }
-
+        
         // 开始当前任务的倒计时
         startTaskTimer() {
             if (this.currentTaskIndex >= this.tasks.length || !this.isMultiRunning) {
@@ -1187,7 +1177,7 @@
             this.lastUpdateTime = Date.now();
             this.multiTimer = requestAnimationFrame(this.updateMultiTimer.bind(this));
         }
-
+        
         // 更新多任务定时器
         updateMultiTimer() {
             if (!this.multiTimer || !this.isMultiRunning) return;
@@ -1221,7 +1211,7 @@
             
             this.multiTimer = requestAnimationFrame(this.updateMultiTimer.bind(this));
         }
-
+        
         // 完成所有多任务
         finishMultiTasks() {
             document.getElementById('multi-status').innerHTML = '<i class="fas fa-check-circle"></i> 所有任务执行完毕';
@@ -1229,7 +1219,7 @@
             this.isMultiRunning = false;
             Storage.saveMultiState({ running: false, index: 0, remaining: 0 });
         }
-
+        
         // 跳转至URL
         navigateToUrl(url, noClose = false, callback) {
             try {
@@ -1255,7 +1245,7 @@
                 }
             }
         }
-
+        
         // 停止多任务定时器
         stopMultiTimer() {
             if (this.multiTimer) {
@@ -1267,14 +1257,14 @@
             this.miniTimeElement.textContent = '00:00:00';
             Storage.saveMultiState({ running: false, index: 0, remaining: 0 });
         }
-
+        
         // 最小化
         minimize() {
             this.ui.mainUI.style.display = 'none';
             this.ui.miniUI.style.display = 'flex';
             this.isMinimized = true;
         }
-
+        
         // 恢复
         restore() {
             this.ui.mainUI.style.display = 'block';
@@ -1282,7 +1272,7 @@
             this.isMinimized = false;
         }
     }
-
+    
     // 初始化应用
     function initApp() {
         const theme = Storage.getTheme();
@@ -1297,7 +1287,7 @@
             controller.minimize();
         }
     }
-
+    
     // 添加菜单命令
     GM_registerMenuCommand("显示定时管理器", () => {
         const miniUI = document.getElementById('timer-mini');
@@ -1312,6 +1302,6 @@
             controller.restore();
         }
     });
-
+    
     initApp();
 })();
