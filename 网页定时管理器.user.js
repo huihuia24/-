@@ -5,6 +5,7 @@
 // @description  网页定时关闭和定时跳转
 // @author       huihuia24
 // @homepage     https://github.com/huihuia24
+// @source       https://github.com/huihuia24/-/tree/main
 // @match        *://*/*
 // @grant        GM_openInTab
 // @grant        GM_getValue
@@ -12,7 +13,9 @@
 // @grant        GM_addStyle
 // @grant        GM_registerMenuCommand
 // @run-at       document-idle
-// @icon         https://github.com/huihuia24/-/blob/28a6ac6404aa154168b731a7d632b306febdc7d2/%E7%BD%91%E9%A1%B5%E5%AE%9A%E6%97%B6%E7%AE%A1%E7%90%86%E5%99%A8.png
+// @icon         https://github.com/huihuia24/Web-Timer-Manager/blob/28a6ac6404aa154168b731a7d632b306febdc7d2/%E7%BD%91%E9%A1%B5%E5%AE%9A%E6%97%B6%E7%AE%A1%E7%90%86%E5%99%A8.png?raw=true
+// @downloadURL https://update.greasyfork.org/scripts/555269/%E7%BD%91%E9%A1%B5%E5%AE%9A%E6%97%B6%E7%AE%A1%E7%90%86%E5%99%A8.user.js
+// @updateURL https://update.greasyfork.org/scripts/555269/%E7%BD%91%E9%A1%B5%E5%AE%9A%E6%97%B6%E7%AE%A1%E7%90%86%E5%99%A8.meta.js
 // ==/UserScript==
 
 (function() {
